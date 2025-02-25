@@ -5,8 +5,16 @@
   "description": "Extracts ChatGPT dialogue as JSON.",
   "permissions": [
     "scripting",
-    "activeTab"
+    "activeTab",
+    "storage"
   ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*"],
