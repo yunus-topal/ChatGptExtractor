@@ -98,6 +98,8 @@ function initialize() {
   window.addEventListener('DOMContentLoaded', detectPlatformAndInject);
   window.addEventListener('hashchange', detectPlatformAndInject);
   window.addEventListener('popstate', detectPlatformAndInject);
+
+  setupAutoSave();
 }
 
 // Wait for the page to fully load and settle
@@ -185,6 +187,20 @@ async function enhancedInitialize() {
   console.log("On chat page, initializing extractor immediately...");
   initialize(); // Your original initialize function
 }
+
+// Listen for user input and handle auto-save
+function setupAutoSave() {
+  document.querySelector('form').addEventListener('submit', (e) => {
+    e.preventDefault(); // Prevents the default form submission if needed
+    chrome.storage.sync.get(["autoSaveEnabled"], (result) => {
+      if (result.autoSaveEnabled) {
+        const dialogue = extractDialogue();
+        uploadDialogue(dialogue);
+      }
+    });
+  });
+}
+
 
 // Start the enhanced initialization process
 enhancedInitialize();

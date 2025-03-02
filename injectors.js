@@ -297,12 +297,7 @@ function injectClaudeExtractButton() {
     extractBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      if (typeof createOptionsMenu === 'function' && typeof extractDeepseekDialogue === 'function') {
-        createOptionsMenu(parentContainer, extractBtn, extractDeepseekDialogue);
-      } else {
-        console.error("Required functions not available");
-        alert("Extract functionality not available yet. Please try again in a moment.");
-      }
+      createOptionsMenu(parentContainer, extractBtn, extractDeepseekDialogue);
     });
     
     // Append button to its container, then to parent container

@@ -30,70 +30,160 @@ function extractChatGPTDialogue() {
   }
   
   function extractClaudeDialogue() {
-    // Select the conversation container (adjust the selector if needed)
-    const container = document.querySelector('div.flex-1.flex.flex-col.gap-3.px-4.max-w-3xl.mx-auto.w-full.pt-1');
-    if (!container) {
-      console.error('Conversation container not found.');
-      return [];
+  // Select the conversation container.
+  // Adjust this selector if your conversation container has a different class or structure.
+  const container = document.querySelector('.flex-1.flex.flex-col.gap-3.px-4.max-w-3xl.mx-auto.w-full.pt-1');
+  if (!container) {
+    console.error("Conversation container not found.");
+    return [];
+  }
+
+  // Find all elements that represent either a user or an AI message.
+  // User messages have a data-testid attribute "user-message"
+  // and AI messages are contained in elements with the class "font-claude-message"
+  const messageNodes = container.querySelectorAll('[data-testid="user-message"], .font-claude-message');
+
+  const dialogues = [];
+  messageNodes.forEach(node => {
+    let role = '';
+    // Determine role based on the selector matched.
+    if (node.matches('[data-testid="user-message"]')) {
+      role = 'user';
+    } else if (node.matches('.font-claude-message')) {
+      role = 'ai';
     }
-  
-    const dialogues = [];
-  
-    // Loop over each direct child of the container to preserve message order.
-    Array.from(container.children).forEach(child => {
-      // Check for a user message element
-      const userMsgElement = child.querySelector('[data-testid="user-message"]');
-      if (userMsgElement) {
-        dialogues.push({
-          role: 'user',
-          text: userMsgElement.innerText.trim()
-        });
-        return; // Proceed to next child
-      }
-  
-      // Check for an AI message element (Claude's message)
-      const aiMsgElement = child.querySelector('.font-claude-message');
-      if (aiMsgElement) {
-        dialogues.push({
-          role: 'ai', // Using "ai" instead of "claude" for the role
-          text: aiMsgElement.innerText.trim()
-        });
-        return;
-      }
-    });
-  
-    return dialogues;
+    // Extract the visible text content.
+    const text = node.innerText.trim();
+    if (role && text) {
+      dialogues.push({ role, text });
+    }
+  });
+
+  return dialogues;
   }
   
-  function extractDeepseekDialogue() {
-    const dialogues = [];
-    // Each conversation turn is assumed to be wrapped in a div with class "dad65929".
-    const turns = document.querySelectorAll('div.dad65929');
+  function extractDeepSeekDialogue() {
+  // Select the outer container of the conversation.
+  const container = document.querySelector('.dad65929');
+  if (!container) {
+    console.error("Conversation container not found.");
+    return [];
+  }
+  
+  // Select user messages and AI messages:
+  // - User messages are in .fa81 > .fbb737a4
+  // - AI messages are in .f9bf7997
+  const messageNodes = container.querySelectorAll('.fa81 .fbb737a4, .f9bf7997');
+  const dialogues = [];
+  
+  messageNodes.forEach(node => {
+    let role = '';
+    if (node.matches('.fbb737a4')) {
+      role = 'user';
+    } else if (node.matches('.f9bf7997')) {
+      role = 'ai';
+    }
     
-    turns.forEach(turn => {
-      // Extract the user message from the element with class "fbb737a4"
-      const userElem = turn.querySelector('div.fbb737a4');
-      if (userElem) {
-        // Often the text is mixed with icon button elements.
-        // We can loop through the child nodes and only capture text nodes.
-        let userText = '';
-        userElem.childNodes.forEach(node => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            userText += node.textContent;
+    // Extract and trim the text content.
+    const text = node.innerText.trim();
+    if (role && text) {
+      dialogues.push({ role, text });
+    }
+  });
+  
+  return dialogues;
+  }
+  
+  function extractDialogue() {
+    const url = window.location.href;
+    // Try to inject based on URL patterns
+    if (url.includes('chatgpt.com')) {
+      return extractChatGPTDialogue();
+    } else if (url.includes('claude.ai')) {
+      return extractClaudeDialogue();
+    } else if (url.includes('deepseek.com') || url.includes('deepseek.ai')) {
+      return extractDeepSeekDialogue();
+    }else {
+      return "Unknown Model";
+    }
+  }
+
+  function extractChatGPTModel(){
+    const modelButton = document.querySelector('[data-testid="model-switcher-dropdown-button"]');
+    if (modelButton) {
+      // The button contains a div with text "ChatGPT" and a span with the model identifier (e.g., "o3-mini-high")
+      const span = modelButton.querySelector('span');
+      if (span && span.textContent.trim() !== '') {
+        return span.textContent.trim();
+      }
+      // Fallback: if the span is not found, try to remove "ChatGPT" from the full text.
+      const fullText = modelButton.textContent.trim();
+      if (fullText.startsWith('ChatGPT')) {
+        return fullText.replace('ChatGPT', '').trim() || 'ChatGPT';
+      }
+    }
+    return 'ChatGPT'; // Default fallback if no button is found.
+  }
+
+  function extractClaudeModel() {
+    try {
+      // Look for the model selector dropdown element
+      const modelSelectorButton = document.querySelector('[data-testid="model-selector-dropdown"]');
+      
+      if (modelSelectorButton) {
+        // Find the div that contains the model name text
+        const modelNameDiv = modelSelectorButton.querySelector('.whitespace-nowrap.tracking-tight');
+        
+        if (modelNameDiv && modelNameDiv.textContent) {
+          // Get the text content and trim any whitespace
+          const modelName = modelNameDiv.textContent.trim();
+          
+          // If we found something, return "Claude " + the model name
+          if (modelName) {
+            return `Claude ${modelName}`;
           }
-        });
-        dialogues.push({ role: 'user', text: userText.trim() });
+        }
       }
       
-      // Extract the AI message from the element with class "ds-markdown ds-markdown--block"
-      const aiElem = turn.querySelector('div.ds-markdown.ds-markdown--block');
-      if (aiElem) {
-        dialogues.push({ role: 'ai', text: aiElem.innerText.trim() });
+      // Alternative approach: try looking for the text near the Claude logo
+      const claudeLogoSvg = document.querySelector('.claude-logo-model-selector');
+      if (claudeLogoSvg) {
+        const parentElement = claudeLogoSvg.closest('div');
+        if (parentElement) {
+          const modelTextElement = parentElement.querySelector('div.whitespace-nowrap');
+          if (modelTextElement && modelTextElement.textContent) {
+            return `Claude ${modelTextElement.textContent.trim()}`;
+          }
+        }
       }
-    });
-    
-    return dialogues;
+      
+      // If we couldn't find it through any method, return the default
+      return "Claude";
+    } catch (error) {
+      console.error("Error extracting Claude model:", error);
+      return "Claude";
+    }
   }
+
+  function extractDeepSeekModel(){
+    return "DeepSeek"; // No model information available in the chat UI.
+  }
+
+  function getConversationModel(){
+
+    const url = window.location.href;
+    // Try to inject based on URL patterns
+    if (url.includes('chatgpt.com')) {
+      return extractChatGPTModel();
+    } else if (url.includes('claude.ai')) {
+      return extractClaudeModel();
+    } else if (url.includes('deepseek.com') || url.includes('deepseek.ai')) {
+      return extractDeepSeekModel();
+    }else {
+      return "Unknown Model";
+    }
+  }  
+
   
   function extractConversationId() {
     try {

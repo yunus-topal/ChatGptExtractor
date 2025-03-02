@@ -28,7 +28,27 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
         reader.readAsDataURL(blob);
       }));
   }
-    
+
+  function createConversationName(){
+    // check url, then create a name with randomized id + the website name. It can be gpt, claude or deepseek for now.
+    // randomize id
+    const randomId = Math.floor(Math.random() * 1000000);
+
+    const url = window.location.href;
+    // Try to inject based on URL patterns
+    if (url.includes('chatgpt.com')) {
+      return "ChatGPT Conversation" + randomId;
+    } else if (url.includes('claude.ai')) {
+      return "Claude Conversation" + randomId;
+    } else if (url.includes('deepseek.com') || url.includes('deepseek.ai')) {
+      return "DeepSeek Conversation" + randomId;
+    }else {
+      return "Conversation" + randomId;
+    }
+  }
+  
+
+
   // Function to send conversation to backend using stored API key and project ID.
   async function sendConversationToBackend() {
     // Retrieve API key and project ID from chrome storage.
@@ -40,7 +60,7 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
         return;
       }
       
-      const dialogues = extractChatGPTDialogue();
+      const dialogues = extractDialogue();
       const chatId = extractConversationId();
   
       // If the document is visible when sending the request, add the current active period
@@ -71,8 +91,8 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
         projectId: projectId,
         imageUrl: null,                // Set to null or use a URL if available
         image: null,                     // Empty string representing no conversation-level image
-        name: "ChatGPT Conversation",  // Customize as needed
-        model: "ChatGPT",              // Customize as needed
+        name: createConversationName(), // Customize as needed
+        model: getConversationModel(),              // Customize as needed
         timestamp: new Date().toISOString(),
         time: totalTimeInSeconds,         // Total active time in milliseconds
         prompts: prompts
