@@ -27,12 +27,24 @@
     button:hover {
       background: #0056b3;
     }
+    .toggle-container {
+      margin-top: 20px;
+    }
+    .warning {
+      color: red;
+      display: none;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
   <h3>ChatGPT Extractor</h3>
   <button id="openOptions">Open Options</button>
-  <!-- Link to an external JS file instead of using inline script -->
+  <div class="toggle-container">
+    <label for="autoSaveToggle">Enable Auto Save</label>
+    <input type="checkbox" id="autoSaveToggle">
+  </div>
+  <div id="warning" class="warning">Project ID or API Key is missing!</div>
   <script src="popup.js"></script>
 </body>
 </html>

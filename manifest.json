@@ -18,7 +18,12 @@
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*", "https://claude.ai/*", "https://chat.deepseek.com/*"],
-      "js": ["content.js"],
+      "js": [
+        "extractors.js",
+        "injectors.js",
+        "sending.js",
+        "content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
