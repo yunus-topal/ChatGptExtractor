@@ -1,5 +1,21 @@
 // content.js
 
+// Track when the user starts being active
+let activeStart = Date.now();
+// Accumulate total active time (in milliseconds)
+let totalActiveTime = 0;
+
+// Listen for visibility changes on the document
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    // When the tab becomes hidden, record the time spent during this active period
+    totalActiveTime += Date.now() - activeStart;
+  } else {
+    // When the tab becomes visible again, restart the timer
+    activeStart = Date.now();
+  }
+});
+
 // Append custom CSS to the page so the extractor button and options menu stand out.
 function addCustomStyles() {
   if (document.getElementById('extractor-style')) return;
@@ -209,6 +225,10 @@ async function sendConversationToBackend() {
     
     const dialogues = extractChatGPTDialogue();
     const chatId = extractConversationId();
+
+    // If the document is visible when sending the request, add the current active period
+    const currentActiveTime = document.hidden ? 0 : Date.now() - activeStart;
+    const totalTimeInSeconds = (totalActiveTime + currentActiveTime) / 1000;
     
     // Convert each dialogue into a BrowserPrompt record.
     const prompts = await Promise.all(dialogues.map(async (dialogue) => {
@@ -237,6 +257,7 @@ async function sendConversationToBackend() {
       name: "ChatGPT Conversation",  // Customize as needed
       model: "ChatGPT",              // Customize as needed
       timestamp: new Date().toISOString(),
+      time: totalTimeInSeconds,         // Total active time in milliseconds
       prompts: prompts
     };
     
