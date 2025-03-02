@@ -17,9 +17,10 @@
   "options_page": "options.html",
   "content_scripts": [
     {
-      "matches": ["https://chatgpt.com/*"],
+      "matches": ["https://chatgpt.com/*", "https://claude.ai/*", "https://chat.deepseek.com/*"],
       "js": ["content.js"],
-      "run_at": "document_end"
+      "run_at": "document_idle"
     }
-  ]
+  ],
+  "host_permissions": ["https://chatgpt.com/*", "https://claude.ai/*", "https://chat.deepseek.com/*"]
 }
