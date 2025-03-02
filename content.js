@@ -343,12 +343,17 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
   });
 }
 
-// ChatGPT Injection with improved positioning
+
 function injectChatGptExtractButton() {
+  // First check if button already exists to avoid duplicates
+  if (document.querySelector('.extract-btn')) {
+    return false; // Button already exists, don't create another one
+  }
+  
   const selectors = [
     'form .group.relative',
-    '.flex.flex-col.w-full.py-2.flex-grow.md\\:py-3.md\\:pl-4', // Alternative selector
-    'form div[data-testid="send-button"]' // Another possible location
+    '.flex.flex-col.w-full.py-2.flex-grow.md\\:py-3.md\\:pl-4',
+    'form div[data-testid="send-button"]'
   ];
   
   let inputContainer = null;
@@ -357,8 +362,8 @@ function injectChatGptExtractButton() {
     if (inputContainer) break;
   }
   
-  if (!inputContainer || inputContainer.querySelector('.extract-btn')) {
-    return false; // Container not found or button already exists
+  if (!inputContainer) {
+    return false; // Container not found
   }
   
   // Find the send button or a suitable reference element
@@ -379,8 +384,8 @@ function injectChatGptExtractButton() {
   
   // Position the button outside the input field
   extractBtn.style.position = 'absolute';
-  extractBtn.style.bottom = '10px'; // Position at the bottom
-  extractBtn.style.right = sendButton ? (sendButton.offsetWidth + 80) + 'px' : '90px'; // Place to the left of send button
+  extractBtn.style.bottom = '10px';
+  extractBtn.style.right = sendButton ? (sendButton.offsetWidth + 80) + 'px' : '90px';
   
   // Handle button click
   extractBtn.addEventListener('click', (e) => {
@@ -389,9 +394,29 @@ function injectChatGptExtractButton() {
     createOptionsMenu(inputContainer, extractBtn, extractChatGPTDialogue);
   });
   
-  // Append button to the container (not inside the input field)
+  // Append button to the container
   inputContainer.appendChild(extractBtn);
+  
+  // Handle form submission to clean up and re-inject the button
+  const form = inputContainer.closest('form');
+  if (form) {
+    form.addEventListener('submit', handleFormSubmit, { once: true });
+  }
+  
   return true;
+}
+
+function handleFormSubmit() {
+  // Remove the current button
+  const extractBtn = document.querySelector('.extract-btn');
+  if (extractBtn) {
+    extractBtn.remove();
+  }
+  
+  // Set a simple timeout to add the button again after submission completes
+  setTimeout(() => {
+    injectChatGptExtractButton();
+  }, 1000); // Wait 1 second for the form submission to complete
 }
 
 // Claude Injection with improved positioning
