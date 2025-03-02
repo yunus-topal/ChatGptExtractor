@@ -297,7 +297,7 @@ function injectClaudeExtractButton() {
     extractBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      createOptionsMenu(parentContainer, extractBtn, extractDeepseekDialogue);
+      createOptionsMenu(parentContainer, extractBtn, extractDeepSeekDialogue);
     });
     
     // Append button to its container, then to parent container
