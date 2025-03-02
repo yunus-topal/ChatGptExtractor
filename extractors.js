@@ -192,7 +192,9 @@ function extractChatGPTDialogue() {
       // Split the pathname into segments and filter out empty parts.
       const pathSegments = parsedUrl.pathname.split('/').filter(Boolean);
       // return the last segment.
-      return pathSegments[pathSegments.length - 1];
+      const lastSegment = pathSegments[pathSegments.length - 1];
+      console.log("Extracted conversation ID:", lastSegment);
+      return lastSegment;
     } catch (error) {
       console.error("Invalid URL provided:", url, error);
       return null;
