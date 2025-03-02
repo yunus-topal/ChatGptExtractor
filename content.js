@@ -188,19 +188,43 @@ async function enhancedInitialize() {
   initialize(); // Your original initialize function
 }
 
-// Listen for user input and handle auto-save
 function setupAutoSave() {
-  document.querySelector('form').addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevents the default form submission if needed
-    chrome.storage.sync.get(["autoSaveEnabled"], (result) => {
-      if (result.autoSaveEnabled) {
-        const dialogue = extractDialogue();
-        uploadDialogue(dialogue);
-      }
-    });
-  });
-}
+  console.log("auto save setup");
 
+  // Common handler: on Enter key (without Shift), trigger auto-save
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      console.log("enter pressed. sending conversation to backend");
+      // Allow a brief delay for the send action to complete
+      setTimeout(() => {
+        chrome.storage.sync.get(["autoSaveEnabled"], (result) => {
+          console.log("Auto-save enabled:", result.autoSaveEnabled);
+          if (result.autoSaveEnabled) {
+            sendConversationToBackend(true);
+          }
+        });
+      }, 100);
+    }
+  };
+
+  // ChatGPT input: contenteditable div with id "prompt-textarea"
+  const chatGPTInput = document.getElementById('prompt-textarea');
+  if (chatGPTInput) {
+    chatGPTInput.addEventListener('keydown', handleKeyDown);
+  }
+
+  // DeepSeek input: textarea with id "chat-input"
+  const deepseekInput = document.getElementById('chat-input');
+  if (deepseekInput) {
+    deepseekInput.addEventListener('keydown', handleKeyDown);
+  }
+
+  // Claude AI input: contenteditable inside a container with aria-label "Write your prompt to Claude"
+  const claudeInput = document.querySelector('div[aria-label="Write your prompt to Claude"] div[contenteditable="true"]');
+  if (claudeInput) {
+    claudeInput.addEventListener('keydown', handleKeyDown);
+  }
+}
 
 // Start the enhanced initialization process
 enhancedInitialize();

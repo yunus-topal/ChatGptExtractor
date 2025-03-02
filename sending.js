@@ -50,7 +50,7 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
 
 
   // Function to send conversation to backend using stored API key and project ID.
-  async function sendConversationToBackend() {
+  async function sendConversationToBackend(isAutoSave = false) {
     // Retrieve API key and project ID from chrome storage.
     chrome.storage.sync.get(['apiKey', 'projectId'], async (items) => {
       const apiKey = items.apiKey;
@@ -62,6 +62,11 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
       
       const dialogues = extractDialogue();
       const chatId = extractConversationId();
+
+      if(chatId === null || chatId === undefined){
+        console.error("Chat ID not found.");
+        return;
+      }
   
       // If the document is visible when sending the request, add the current active period
       const currentActiveTime = document.hidden ? 0 : Date.now() - activeStart;
@@ -118,11 +123,15 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
       })
       .then(data => {
         console.log("Conversation sent successfully:", data);
-        alert("Conversation sent successfully!");
+        if (!isAutoSave) {
+          alert("Conversation sent successfully!");
+        }
       })
       .catch(error => {
         console.error("Error sending conversation:", error);
-        alert("Error sending conversation: " + error.message);
+        if (!isAutoSave){
+          alert("Error sending conversation: " + error.message);
+        }
       });
     });
   }
