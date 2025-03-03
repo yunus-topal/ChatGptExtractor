@@ -6,7 +6,8 @@
   "permissions": [
     "scripting",
     "activeTab",
-    "storage"
+    "storage",
+    "geolocation"
   ],
   "action": {
     "default_popup": "popup.html"

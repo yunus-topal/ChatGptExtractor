@@ -47,10 +47,88 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
     }
   }
   
+  function getOS(userAgent) {
+    // Check for Windows OS
+    if (userAgent.indexOf("Windows NT") !== -1) {
+      const versionMatch = userAgent.match(/Windows NT ([0-9.]+)/);
+      return /*versionMatch ? `Windows ${versionMatch[1]}` :*/ "Windows";
+    }
+    // Check for macOS
+    if (userAgent.indexOf("Mac OS X") !== -1) {
+      const versionMatch = userAgent.match(/Mac OS X ([0-9_]+)/);
+      return /*versionMatch
+        ? `macOS ${versionMatch[1].replace(/_/g, ".")}`
+        :*/ "macOS";
+    }
+    // Check for Linux
+    if (userAgent.indexOf("Linux") !== -1) {
+      return "Linux";
+    }
+    return "Other";
+  }
+  
+  function getBrowser(userAgent) {
+    // Check for Edge first because its UA string includes Chrome as well
+    if (userAgent.indexOf("Edg/") !== -1) {
+      const versionMatch = userAgent.match(/Edg\/([0-9.]+)/);
+      return /*versionMatch ? `Edge ${versionMatch[1]}` :*/ "Edge";
+    }
+    // Then check for Chrome (make sure it's not Edge)
+    if (userAgent.indexOf("Chrome/") !== -1) {
+      const versionMatch = userAgent.match(/Chrome\/([0-9.]+)/);
+      return /*versionMatch ? `Chrome ${versionMatch[1]}` :*/ "Chrome";
+    }
+    // Check for Safari (ensure it’s not Chrome since Chrome’s UA also contains Safari)
+    if (userAgent.indexOf("Safari/") !== -1 && userAgent.indexOf("Chrome") === -1) {
+      const versionMatch = userAgent.match(/Version\/([0-9.]+)/);
+      return /*versionMatch ? `Safari ${versionMatch[1]}` :*/ "Safari";
+    }
+    // Check for Firefox
+    if (userAgent.indexOf("Firefox/") !== -1) {
+      const versionMatch = userAgent.match(/Firefox\/([0-9.]+)/);
+      return /*versionMatch ? `Firefox ${versionMatch[1]}` :*/ "Firefox";
+    }
+    return "Other";
+  }
+
+  function getUserInfo(){
+    const userAgent = navigator.userAgent;
+    var info = {
+      os: getOS(userAgent),
+      browser: getBrowser(userAgent),
+      language: navigator.language
+    }
+    // Check if the Geolocation API is available
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Log the latitude and longitude when permission is granted
+          info.latitude = position.coords.latitude;
+          info.longitude = position.coords.longitude;
+        },
+        (error) => {
+          // Handle any errors (e.g., user denies permission)
+          console.error("Error retrieving location:", error);
+        }
+      );
+    } else {
+      console.log("Geolocation is not available in this browser.");
+    }
+    return info;
+  }
+
+  // Usage with async/await
+async function fetchUserInfo() {
+  const info = await getUserInfo();
+  console.log(info);
+  return info;
+}
 
 
   // Function to send conversation to backend using stored API key.
   async function sendConversationToBackend(isAutoSave = false) {
+    const userInfo = await fetchUserInfo();
+
     // Retrieve API key from chrome storage.
     chrome.storage.sync.get(['apiKey'], async (items) => {
       const apiKey = items.apiKey;
@@ -92,6 +170,7 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
       // Build the BrowserConversation payload.
       const conversation = {
         chatId: chatId,
+        userInfo: userInfo,
         imageUrl: null,                // Set to null or use a URL if available
         image: null,                     // Empty string representing no conversation-level image
         name: createConversationName(), // Customize as needed
@@ -101,7 +180,7 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
         prompts: prompts
       };
       
-      const backendUrl = "https://hai.edu.sot.tum.de/api/browserextension"; // Replace with your backend URL.
+      const backendUrl = "https://localhost:7136/api/browserextension"; // Replace with your backend URL.
     
       fetch(backendUrl, {
         method: "POST",
