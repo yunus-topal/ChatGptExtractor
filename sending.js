@@ -49,14 +49,13 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
   
 
 
-  // Function to send conversation to backend using stored API key and project ID.
+  // Function to send conversation to backend using stored API key.
   async function sendConversationToBackend(isAutoSave = false) {
-    // Retrieve API key and project ID from chrome storage.
-    chrome.storage.sync.get(['apiKey', 'projectId'], async (items) => {
+    // Retrieve API key from chrome storage.
+    chrome.storage.sync.get(['apiKey'], async (items) => {
       const apiKey = items.apiKey;
-      const projectId = items.projectId;
-      if (!apiKey || !projectId) {
-        alert("Warning: API Key or Project ID are missing. Please set them in the extension options.");
+      if (!apiKey) {
+        alert("Warning: API Key is missing. Please set them in the extension options.");
         return;
       }
       
@@ -93,7 +92,6 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
       // Build the BrowserConversation payload.
       const conversation = {
         chatId: chatId,
-        projectId: projectId,
         imageUrl: null,                // Set to null or use a URL if available
         image: null,                     // Empty string representing no conversation-level image
         name: createConversationName(), // Customize as needed

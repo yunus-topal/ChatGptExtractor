@@ -2,9 +2,8 @@ document.getElementById('settingsForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const apiKey = document.getElementById('apiKey').value;
-    const projectId = document.getElementById('projectId').value;
     
-    chrome.storage.sync.set({ apiKey, projectId }, function() {
+    chrome.storage.sync.set({ apiKey }, function() {
       document.getElementById('status').innerText = 'Settings saved successfully!';
       setTimeout(() => {
         document.getElementById('status').innerText = '';
@@ -14,12 +13,9 @@ document.getElementById('settingsForm').addEventListener('submit', function(e) {
   
   // Load existing settings when the options page loads.
   document.addEventListener('DOMContentLoaded', function() {
-    chrome.storage.sync.get(['apiKey', 'projectId'], function(items) {
+    chrome.storage.sync.get(['apiKey'], function(items) {
       if (items.apiKey) {
         document.getElementById('apiKey').value = items.apiKey;
-      }
-      if (items.projectId) {
-        document.getElementById('projectId').value = items.projectId;
       }
     });
   });

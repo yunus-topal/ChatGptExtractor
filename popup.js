@@ -9,9 +9,9 @@ document.getElementById("autoSaveToggle").addEventListener("change", (event) => 
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  chrome.storage.sync.get(["autoSaveEnabled", "projectId", "apiKey"], (result) => {
+  chrome.storage.sync.get(["autoSaveEnabled", "apiKey"], (result) => {
     document.getElementById("autoSaveToggle").checked = result.autoSaveEnabled || false;
-    if (!result.projectId || !result.apiKey) {
+    if (!result.apiKey) {
       document.getElementById("warning").style.display = "block";
     }
   });
