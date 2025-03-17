@@ -180,7 +180,7 @@ async function fetchUserInfo() {
         prompts: prompts
       };
       
-      const backendUrl = "https://localhost:7136/api/browserextension"; // Replace with your backend URL.
+      const backendUrl = "https://hai.edu.sot.tum.de/api/browserextension"; // Replace with your backend URL.
     
       fetch(backendUrl, {
         method: "POST",
