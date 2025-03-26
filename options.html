@@ -28,13 +28,15 @@
       margin-top: 15px;
       font-weight: bold;
     }
-    input[type="text"] {
+    input[type="text"],
+    input[type="password"] {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
     button {
       margin-top: 20px;
       padding: 10px;
@@ -62,7 +64,7 @@
     <h1>Extension Settings</h1>
     <form id="settingsForm">
       <label for="apiKey">API Key:</label>
-      <input type="text" id="apiKey" name="apiKey" required>
+      <input type="password" id="apiKey" name="apiKey" required>
 
       <button type="submit">Save</button>
     </form>
