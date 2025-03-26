@@ -61,7 +61,8 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
     const selectors = [
       'form .group.relative',
       '.flex.flex-col.w-full.py-2.flex-grow.md\\:py-3.md\\:pl-4',
-      'form div[data-testid="send-button"]'
+      'form div[data-testid="send-button"]',
+      'form[data-type="unified-composer"]'
     ];
     
     let inputContainer = null;
@@ -94,6 +95,10 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
     extractBtn.style.position = 'absolute';
     extractBtn.style.bottom = '10px';
     extractBtn.style.right = sendButton ? (sendButton.offsetWidth + 80) + 'px' : '90px';
+
+    extractBtn.style.zIndex = '9999'; // <-- important to bring it above overlapping elements
+    extractBtn.style.cursor = 'pointer';
+
     
     // Handle button click
     extractBtn.addEventListener('click', (e) => {
