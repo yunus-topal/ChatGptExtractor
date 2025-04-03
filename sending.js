@@ -98,23 +98,30 @@ function downloadJSON(data, filename = 'chatgpt-dialogue.json') {
       browser: getBrowser(userAgent),
       language: navigator.language
     }
-    // Check if the Geolocation API is available
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          // Log the latitude and longitude when permission is granted
-          info.latitude = position.coords.latitude;
-          info.longitude = position.coords.longitude;
-        },
-        (error) => {
-          // Handle any errors (e.g., user denies permission)
-          console.error("Error retrieving location:", error);
-        }
-      );
-    } else {
-      console.log("Geolocation is not available in this browser.");
-    }
-    return info;
+    console.log("get user info");
+    return new Promise((resolve, reject) => {
+      // Check if the Geolocation API is available
+      if ("geolocation" in navigator) {
+        console.log("Geolocation is available.");
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            // Update info with latitude and longitude
+            info.latitude = position.coords.latitude;
+            info.longitude = position.coords.longitude;
+            console.log("User info with geolocation:", info);
+            resolve(info);
+          },
+          (error) => {
+            console.error("Error retrieving location:", error);
+            // Optionally resolve info without lat/long or reject
+            resolve(info);
+          }
+        );
+      } else {
+        console.log("Geolocation is not available in this browser.");
+        resolve(info);
+      }
+    });
   }
 
   // Usage with async/await
@@ -167,6 +174,8 @@ async function fetchUserInfo() {
         };
       }));
       
+      console.log("User info in sending:", userInfo);
+
       // Build the BrowserConversation payload.
       const conversation = {
         chatId: chatId,
