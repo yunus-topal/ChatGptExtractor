@@ -93,6 +93,42 @@ function extractChatGPTDialogue() {
   
   return dialogues;
   }
+
+  function extractGeminiDialogue() {
+    // Get the outer container by its ID (adjust if needed)
+    const chatHistory = document.getElementById("chat-history");
+    if (!chatHistory) {
+      console.error("No element with id 'chat-history' found!");
+      return [];
+    }
+    
+    // Query all conversation containers.
+    const conversationContainers = chatHistory.querySelectorAll(".conversation-container");
+    const dialogues = [];
+    
+    conversationContainers.forEach(container => {
+      // Extract the user's query text.
+      // Adjust the selectors to match the site's structure if they change.
+      const userElement = container.querySelector(".user-query .query-text");
+      if (userElement) {
+        const userText = userElement.innerText.trim();
+        if (userText) {
+          dialogues.push({ role: "user", text: userText });
+        }
+      }
+      
+      // Extract the assistant's (or AI's) response text.
+      const aiElement = container.querySelector(".model-response .response-content");
+      if (aiElement) {
+        const aiText = aiElement.innerText.trim();
+        if (aiText) {
+          dialogues.push({ role: "ai", text: aiText });
+        }
+      }
+    });
+    
+    return dialogues;
+  }
   
   function extractDialogue() {
     const url = window.location.href;
@@ -103,7 +139,10 @@ function extractChatGPTDialogue() {
       return extractClaudeDialogue();
     } else if (url.includes('deepseek.com') || url.includes('deepseek.ai')) {
       return extractDeepSeekDialogue();
-    }else {
+    } else if (url.includes('gemini.google.com')) {
+      return extractGeminiDialogue();
+    }
+    else {
       return "Unknown Model";
     }
   }
@@ -169,6 +208,40 @@ function extractChatGPTDialogue() {
     return "DeepSeek"; // No model information available in the chat UI.
   }
 
+  function extractGeminiModel() {
+    try {
+      // Look for the attribution element that contains the Gemini model text.
+      const attributionElement = document.querySelector('[data-test-id="attribution-text"]');
+      
+      if (attributionElement && attributionElement.textContent) {
+        // Get the text, trim whitespace and prefix it with "Gemini ".
+        const modelText = attributionElement.textContent.trim();
+        if (modelText) {
+          return `Gemini ${modelText}`;
+        }
+      }
+      
+      // Alternative approach: if needed, you could try to locate text via other nearby elements.
+      // For example, sometimes the Gemini logo container might be used.
+      const logoContainer = document.querySelector('.bard-logo-container');
+      if (logoContainer) {
+        // As an example, search for a nested span with data-test-id "bard-text" (which in this case is "Gemini")
+        const geminiText = logoContainer.querySelector('[data-test-id="bard-text"]');
+        if (geminiText && geminiText.textContent) {
+          // Although this likely will always return "Gemini", we can use it as a fallback.
+          return `Gemini ${geminiText.textContent.trim()}`;
+        }
+      }
+      
+      // If nothing is found, return a default value.
+      return "Gemini";
+    } catch (error) {
+      console.error("Error extracting Gemini model:", error);
+      return "Gemini";
+    }
+  }
+
+  // TODO: create url variables instead of constants.
   function getConversationModel(){
 
     const url = window.location.href;
@@ -179,7 +252,10 @@ function extractChatGPTDialogue() {
       return extractClaudeModel();
     } else if (url.includes('deepseek.com') || url.includes('deepseek.ai')) {
       return extractDeepSeekModel();
-    }else {
+    } else if (url.includes('gemini.google.com')) {
+      return extractGeminiModel();
+    }
+    else {
       return "Unknown Model";
     }
   }  
@@ -192,9 +268,11 @@ function extractChatGPTDialogue() {
       // Split the pathname into segments and filter out empty parts.
       const pathSegments = parsedUrl.pathname.split('/').filter(Boolean);
       // return the last segment.
-      const lastSegment = pathSegments[pathSegments.length - 1];
-      console.log("Extracted conversation ID:", lastSegment);
-      return lastSegment;
+      let lastSegment = pathSegments[pathSegments.length - 1];
+      // if the last segment has any query parameters, remove them.
+      const lastSegmentWithoutQuery = lastSegment.split('?')[0];
+      console.log("Extracted conversation ID:", lastSegmentWithoutQuery);
+      return lastSegmentWithoutQuery;
     } catch (error) {
       console.error("Invalid URL provided:", url, error);
       return null;

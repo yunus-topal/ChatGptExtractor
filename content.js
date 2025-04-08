@@ -137,6 +137,11 @@ function isChatPage() {
       (url.includes('/chat') || url.includes('/a/') || url.includes('/s/'))) {
     return true;
   }
+
+  // Gemini: check for chat in the URL
+  if (url.includes('gemini.google.com')) {
+    return true;
+  }
   
   // If we can find chat UI elements, we're probably on a chat page
   const chatUIElements = document.querySelector(
@@ -224,6 +229,9 @@ function setupAutoSave() {
   if (claudeInput) {
     claudeInput.addEventListener('keydown', handleKeyDown);
   }
+
+  // todo: add gemini input handler
+  
 }
 
 // Start the enhanced initialization process

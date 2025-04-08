@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "ChatGPT Dialogue Extractor",
+  "name": "Human-LLM Dialogue Extractor",
   "version": "1.1",
-  "description": "Extracts ChatGPT dialogue as JSON.",
+  "description": "Extracts human-LLM dialogue as JSON.",
   "permissions": [
     "scripting",
     "activeTab",
@@ -18,7 +18,7 @@
   "options_page": "options.html",
   "content_scripts": [
     {
-      "matches": ["https://chatgpt.com/*", "https://claude.ai/*", "https://chat.deepseek.com/*"],
+      "matches": ["https://chatgpt.com/*", "https://claude.ai/*", "https://chat.deepseek.com/*", "https://gemini.google.com/*"],
       "js": [
         "extractors.js",
         "injectors.js",
@@ -28,5 +28,5 @@
       "run_at": "document_idle"
     }
   ],
-  "host_permissions": ["https://chatgpt.com/*", "https://claude.ai/*", "https://chat.deepseek.com/*"]
+  "host_permissions": ["https://chatgpt.com/*", "https://claude.ai/*", "https://chat.deepseek.com/*", "https://gemini.google.com/*"]
 }

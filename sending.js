@@ -136,13 +136,13 @@ async function fetchUserInfo() {
   async function sendConversationToBackend(isAutoSave = false) {
     const userInfo = await fetchUserInfo();
 
-    // Retrieve API key from chrome storage.
-    chrome.storage.sync.get(['apiKey'], async (items) => {
+      chrome.storage.sync.get(['apiKey'], async (items) => {
+        if (!items || !items.apiKey) {
+          alert("Warning: API Key is missing or undefined. Please set it in the extension options.");
+          return;
+        }
+      
       const apiKey = items.apiKey;
-      if (!apiKey) {
-        alert("Warning: API Key is missing. Please set them in the extension options.");
-        return;
-      }
       
       const dialogues = extractDialogue();
       const chatId = extractConversationId();

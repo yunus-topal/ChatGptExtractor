@@ -53,6 +53,7 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
   
   
   function injectChatGptExtractButton() {
+    //console.log("injectChatGptExtractButton called");
     // First check if button already exists to avoid duplicates
     if (document.querySelector('.extract-btn')) {
       return false; // Button already exists, don't create another one
@@ -118,6 +119,84 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
     
     return true;
   }
+
+
+  function injectGeminiExtractButton() {
+    //console.log("injectGeminiExtractButton called");
+    // Avoid duplicates by checking if the button already exists.
+    if (document.querySelector('.extract-btn')) {
+      return false; // Already injected.
+    }
+  
+    // Try several selectors to get the container where we want to inject the button.
+    // In our case, we target the input area inside the Gemini input container.
+    const selectors = [
+      'input-container .input-area-container',
+      'input-container .text-input-field_textarea-inner',
+      'input-container'
+    ];
+    
+    let inputContainer = null;
+    for (const selector of selectors) {
+      inputContainer = document.querySelector(selector);
+      if (inputContainer) break;
+    }
+    
+    if (!inputContainer) {
+      console.error("Input container not found.");
+      return false;
+    }
+    
+    // Look for a reference element such as the send button.
+    // In the provided HTML there is a send button inside a div with class "send-button-container"
+    let sendButton = inputContainer.querySelector('.send-button-container button.send-button');
+    if (!sendButton) {
+      // If not found inside inputContainer, try a more generic selector.
+      sendButton = document.querySelector('.send-button');
+    }
+    
+    // Ensure the container is positioned relative
+    inputContainer.style.position = 'relative';
+    
+    // Optionally, add any custom styles by calling your helper function.
+    addCustomStyles && addCustomStyles();
+  
+    // Create the extract button.
+    const extractBtn = document.createElement('button');
+    extractBtn.innerText = 'Extract Dialogue';
+    extractBtn.classList.add('extract-btn');
+  
+    // Position the button. Adjust bottom/right values as needed.
+    extractBtn.style.position = 'absolute';
+    extractBtn.style.bottom = '10px';
+    if (sendButton) {
+      extractBtn.style.right = (sendButton.offsetWidth + 80) + 'px';
+    } else {
+      extractBtn.style.right = '90px';
+    }
+    extractBtn.style.zIndex = '9999'; // Bring above overlapping elements
+    extractBtn.style.cursor = 'pointer';
+  
+    // Handle button click:
+    // Prevent default actions and then call your options menu and extraction function.
+    extractBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      createOptionsMenu(inputContainer, extractBtn, extractChatGPTDialogue);
+    });
+    
+    // Append the button to the found container.
+    inputContainer.appendChild(extractBtn);
+  
+    // If the input container is inside a form, ensure the button is re-injected after a submission.
+    const form = inputContainer.closest('form');
+    if (form) {
+      form.addEventListener('submit', handleFormSubmit, { once: true });
+    }
+    
+    return true;
+  }
+  
   
   function handleFormSubmit() {
     // Remove the current button
@@ -135,57 +214,66 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
 
 // Claude Injection with improved positioning
 function injectClaudeExtractButton() {
-    const selectors = [
-      'fieldset.flex.w-full.min-w-0.flex-col-reverse',
-      'div[data-testid="input-container"]',
-      '.relative.flex.w-full.flex-col' // Alternative selector
-    ];
-    
-    let inputContainer = null;
-    for (const selector of selectors) {
-      inputContainer = document.querySelector(selector);
-      if (inputContainer) break;
-    }
-    
-    if (!inputContainer || inputContainer.querySelector('.extract-btn')) {
-      return false; // Container not found or button already exists
-    }
-    
-    // Find a reference element (send button or similar)
-    const sendButton = inputContainer.querySelector('[data-testid="send-button"]') || 
-                       inputContainer.querySelector('button[type="submit"]') ||
-                       inputContainer.querySelector('button:last-child');
-    
-    // Add custom styles
-    addCustomStyles();
-    
-    // Create a wrapper div for positioning
-    const buttonWrapper = document.createElement('div');
-    buttonWrapper.style.position = 'absolute';
-    buttonWrapper.style.bottom = '10px';
-    buttonWrapper.style.right = sendButton ? (sendButton.offsetWidth + 80) + 'px' : '90px';
-    buttonWrapper.style.zIndex = '1000';
-    
-    // Create button
-    const extractBtn = document.createElement('button');
-    extractBtn.innerText = 'Extract Dialogue';
-    extractBtn.classList.add('extract-btn');
-    
-    // Handle button click
-    extractBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      createOptionsMenu(inputContainer, extractBtn, extractClaudeDialogue);
-    });
-    
-    // Append button to wrapper, then wrapper to container
-    buttonWrapper.appendChild(extractBtn);
-    inputContainer.appendChild(buttonWrapper);
-    return true;
+  //console.log("injectClaudeExtractButton called");
+  
+  // Use the updated container selector that targets the new HTML structure.
+  const selectors = [
+    'div.flex.flex-col.bg-bg-000', // new container from updated HTML
+    'fieldset.flex.w-full.min-w-0.flex-col-reverse',
+    'div[data-testid="input-container"]',
+    '.relative.flex.w-full.flex-col' // alternative fallback
+  ];
+  
+  let inputContainer = null;
+  for (const selector of selectors) {
+    inputContainer = document.querySelector(selector);
+    if (inputContainer) break;
   }
+  
+  // If no container is found or button is already injected, exit early
+  if (!inputContainer || inputContainer.querySelector('.extract-btn')) {
+    return false;
+  }
+  
+  // Find a reference element (send button or similar) using updated selectors:
+  const sendButton = inputContainer.querySelector('[aria-label="Send message"]') ||
+                     inputContainer.querySelector('button[type="submit"]') ||
+                     inputContainer.querySelector('button:last-child');
+  
+  // Inject custom styles (assumed to be defined elsewhere)
+  addCustomStyles();
+  
+  // Create a wrapper div for positioning the button
+  const buttonWrapper = document.createElement('div');
+  buttonWrapper.style.position = 'absolute';
+  buttonWrapper.style.bottom = '10px';
+  // Position the button relative to the send button's width if found; fallback otherwise.
+  buttonWrapper.style.right = sendButton ? (sendButton.offsetWidth + 80) + 'px' : '90px';
+  buttonWrapper.style.zIndex = '1000';
+  
+  // Create the Extract Dialogue button and add a CSS class.
+  const extractBtn = document.createElement('button');
+  extractBtn.innerText = 'Extract Dialogue';
+  extractBtn.classList.add('extract-btn');
+  
+  // Attach click event: prevent default actions and open the options menu.
+  extractBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    createOptionsMenu(inputContainer, extractBtn, extractClaudeDialogue);
+  });
+  
+  // Append the button to the wrapper, and then add it to the container.
+  buttonWrapper.appendChild(extractBtn);
+  inputContainer.appendChild(buttonWrapper);
+  
+  return true;
+}
+
   
   // DeepSeek Injection with improved detection and resilience
   function injectDeepseekExtractButton() {
+    //console.log("injectDeepseekExtractButton called");
     // More comprehensive set of selectors to try
     const selectors = [
       'div.fad49dec',
@@ -330,6 +418,7 @@ function injectClaudeExtractButton() {
   function detectPlatformAndInject() {
     const url = window.location.href;
     
+    console.log("Current URL:", url);
     // Try to inject based on URL patterns
     if (url.includes('chatgpt.com')) {
       return injectChatGptExtractButton();
@@ -337,6 +426,8 @@ function injectClaudeExtractButton() {
       return injectClaudeExtractButton();
     } else if (url.includes('deepseek.com') || url.includes('deepseek.ai')) {
       return injectDeepseekExtractButton();
+    } else if (url.includes('gemini.google.com')) {
+      return injectGeminiExtractButton();
     }
     
     // If URL doesn't match, try detecting based on DOM structure
@@ -344,6 +435,7 @@ function injectClaudeExtractButton() {
     injected = injectChatGptExtractButton() || injected;
     injected = injectClaudeExtractButton() || injected;
     injected = injectDeepseekExtractButton() || injected;
+    injected = injectGeminiExtractButton() || injected;
     
     return injected;
   }
