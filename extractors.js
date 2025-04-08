@@ -65,76 +65,57 @@ function extractChatGPTDialogue() {
   function extractDeepSeekDialogue() {
     const dialogues = [];
   
-    // Look through all elements that have a class containing 'dad65929'
     document.querySelectorAll('[class]').forEach(elem => {
       if (!elem.className.includes('dad65929')) return;
   
-      // Find any element with class containing '_9663006'
       const container = Array.from(elem.querySelectorAll('[class]')).find(el =>
         el.className.includes('_9663006')
       );
   
-      // Inside that container, find a direct child whose class contains 'fbb737a4'
-      let userText = null;
       if (container) {
-        const child = Array.from(container.children).find(childEl =>
-          childEl.className.includes('fbb737a4')
+        const userEl = Array.from(container.children).find(child =>
+          child.className.includes('fbb737a4')
         );
-        if (child) {
-          userText = child.childNodes[0]?.nodeValue?.trim();
-          if (userText) {
-            dialogues.push({ role: 'user', text: userText });
-          }
+        const userText = userEl?.textContent?.trim();
+        if (userText) {
+          dialogues.push({ role: 'user', text: userText });
         }
       }
   
-      // AI response inside the markdown block
-      const aiMessageElem = elem.querySelector('.ds-markdown');
-      if (aiMessageElem) {
-        const aiText = aiMessageElem.innerText.trim();
-        if (aiText) {
-          dialogues.push({ role: 'ai', text: aiText });
-        }
+      const aiText = elem.querySelector('.ds-markdown')?.innerText?.trim();
+      if (aiText) {
+        dialogues.push({ role: 'ai', text: aiText });
       }
     });
   
     return dialogues;
   }
   
+  
 
   function extractGeminiDialogue() {
-    // Get the outer container by its ID (adjust if needed)
-    const chatHistory = document.getElementById("chat-history");
-    if (!chatHistory) {
-      console.error("No element with id 'chat-history' found!");
-      return [];
-    }
-    
-    // Query all conversation containers.
-    const conversationContainers = chatHistory.querySelectorAll(".conversation-container");
     const dialogues = [];
-    
-    conversationContainers.forEach(container => {
-      // Extract the user's query text.
-      // Adjust the selectors to match the site's structure if they change.
-      const userElement = container.querySelector(".user-query .query-text");
-      if (userElement) {
-        const userText = userElement.innerText.trim();
-        if (userText) {
-          dialogues.push({ role: "user", text: userText });
-        }
+    //console.log("Gemini dialogue extraction started.");
+    // Get all conversation blocks
+    const conversationElems = document.querySelectorAll('.conversation-container');
+  
+    conversationElems.forEach(convo => {
+      //console.log("cycling through conversation block", convo);
+      // Extract user query
+      const userQueryElem = convo.querySelector('user-query-content .query-text');
+      const userText = userQueryElem?.innerText?.trim();
+      if (userText) {
+        dialogues.push({ role: 'user', text: userText });
       }
-      
-      // Extract the assistant's (or AI's) response text.
-      const aiElement = container.querySelector(".model-response .response-content");
-      if (aiElement) {
-        const aiText = aiElement.innerText.trim();
-        if (aiText) {
-          dialogues.push({ role: "ai", text: aiText });
-        }
+  
+      // Extract AI response
+      const aiResponseElem = convo.querySelector('message-content .markdown');
+      const aiText = aiResponseElem?.innerText?.trim();
+      if (aiText) {
+        dialogues.push({ role: 'ai', text: aiText });
       }
     });
-    
+  
     return dialogues;
   }
   

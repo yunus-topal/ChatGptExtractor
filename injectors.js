@@ -182,7 +182,7 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
     extractBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      createOptionsMenu(inputContainer, extractBtn, extractChatGPTDialogue);
+      createOptionsMenu(inputContainer, extractBtn, extractGeminiDialogue);
     });
     
     // Append the button to the found container.
@@ -207,7 +207,7 @@ function createOptionsMenu(parentElement, extractBtn, extractFunction) {
     
     // Set a simple timeout to add the button again after submission completes
     setTimeout(() => {
-      injectChatGptExtractButton();
+      detectPlatformAndInject();
     }, 1000); // Wait 1 second for the form submission to complete
   }
 
