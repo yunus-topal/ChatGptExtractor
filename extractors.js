@@ -63,36 +63,44 @@ function extractChatGPTDialogue() {
   }
   
   function extractDeepSeekDialogue() {
-  // Select the outer container of the conversation.
-  const container = document.querySelector('.dad65929');
-  if (!container) {
-    console.error("Conversation container not found.");
-    return [];
+    const dialogues = [];
+  
+    // Look through all elements that have a class containing 'dad65929'
+    document.querySelectorAll('[class]').forEach(elem => {
+      if (!elem.className.includes('dad65929')) return;
+  
+      // Find any element with class containing '_9663006'
+      const container = Array.from(elem.querySelectorAll('[class]')).find(el =>
+        el.className.includes('_9663006')
+      );
+  
+      // Inside that container, find a direct child whose class contains 'fbb737a4'
+      let userText = null;
+      if (container) {
+        const child = Array.from(container.children).find(childEl =>
+          childEl.className.includes('fbb737a4')
+        );
+        if (child) {
+          userText = child.childNodes[0]?.nodeValue?.trim();
+          if (userText) {
+            dialogues.push({ role: 'user', text: userText });
+          }
+        }
+      }
+  
+      // AI response inside the markdown block
+      const aiMessageElem = elem.querySelector('.ds-markdown');
+      if (aiMessageElem) {
+        const aiText = aiMessageElem.innerText.trim();
+        if (aiText) {
+          dialogues.push({ role: 'ai', text: aiText });
+        }
+      }
+    });
+  
+    return dialogues;
   }
   
-  // Select user messages and AI messages:
-  // - User messages are in .fa81 > .fbb737a4
-  // - AI messages are in .f9bf7997
-  const messageNodes = container.querySelectorAll('.fa81 .fbb737a4, .f9bf7997');
-  const dialogues = [];
-  
-  messageNodes.forEach(node => {
-    let role = '';
-    if (node.matches('.fbb737a4')) {
-      role = 'user';
-    } else if (node.matches('.f9bf7997')) {
-      role = 'ai';
-    }
-    
-    // Extract and trim the text content.
-    const text = node.innerText.trim();
-    if (role && text) {
-      dialogues.push({ role, text });
-    }
-  });
-  
-  return dialogues;
-  }
 
   function extractGeminiDialogue() {
     // Get the outer container by its ID (adjust if needed)
