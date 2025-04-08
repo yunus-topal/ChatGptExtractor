@@ -1,55 +1,83 @@
 //---------------------------------Menu Creation-------------------------------------
 function createOptionsMenu(parentElement, extractBtn, extractFunction) {
-    // Remove any existing menu
-    const existingMenu = document.querySelector('.extract-options');
-    if (existingMenu) {
+  // Remove any existing menu
+  const existingMenu = document.querySelector('.extract-options');
+  if (existingMenu) {
       existingMenu.remove();
       return;
-    }
-    
-    // Create options menu
-    const menu = document.createElement('div');
-    menu.classList.add('extract-options');
-    
-    // JSON export option
-    const jsonBtn = document.createElement('button');
-    jsonBtn.innerText = 'Export as JSON';
-    jsonBtn.classList.add('extract-option-button');
-    jsonBtn.addEventListener('click', () => {
+  }
+
+  // Create options menu
+  const menu = document.createElement('div');
+  menu.classList.add('extract-options');
+
+  // JSON export option
+  const jsonBtn = document.createElement('button');
+  jsonBtn.innerText = 'Export as JSON';
+  jsonBtn.classList.add('extract-option-button');
+  jsonBtn.addEventListener('click', () => {
       const dialogues = extractFunction();
       downloadJSON(dialogues);
       menu.remove();
-    });
-    
-    // Send to backend option
-    const sendBtn = document.createElement('button');
-    sendBtn.innerText = 'Send to Backend';
-    sendBtn.classList.add('extract-option-button');
-    sendBtn.addEventListener('click', () => {
+  });
+
+  // Send to backend option
+  const sendBtn = document.createElement('button');
+  sendBtn.innerText = 'Send to Backend';
+  sendBtn.classList.add('extract-option-button');
+  sendBtn.addEventListener('click', () => {
+      // Show notification here
+      showNotification('Sending data to backend...');
+
       sendConversationToBackend();
       menu.remove();
-    });
-    
-    menu.appendChild(jsonBtn);
-    menu.appendChild(sendBtn);
-    
-    // Position the menu
-    menu.style.visibility = 'hidden';
-    parentElement.appendChild(menu);
-    
-    const menuHeight = menu.offsetHeight;
-    menu.style.top = (extractBtn.offsetTop - menuHeight - 5) + 'px';
-    menu.style.left = extractBtn.offsetLeft + 'px';
-    menu.style.visibility = 'visible';
-    
-    // Close the menu when clicking outside
-    document.addEventListener('click', function closeMenu(e) {
+  });
+
+  menu.appendChild(jsonBtn);
+  menu.appendChild(sendBtn);
+
+  // Position the menu
+  menu.style.visibility = 'hidden';
+  parentElement.appendChild(menu);
+
+  const menuHeight = menu.offsetHeight;
+  menu.style.top = (extractBtn.offsetTop - menuHeight - 5) + 'px';
+  menu.style.left = extractBtn.offsetLeft + 'px';
+  menu.style.visibility = 'visible';
+
+  // Close the menu when clicking outside
+  document.addEventListener('click', function closeMenu(e) {
       if (!menu.contains(e.target) && e.target !== extractBtn) {
-        menu.remove();
-        document.removeEventListener('click', closeMenu);
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
       }
-    });
-  }
+  });
+}
+
+// Function to show a simple notification
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.classList.add('notification');
+  notification.innerText = message;
+
+  // Basic styling for the notification
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.left = '50%';
+  notification.style.transform = 'translateX(-50%)';
+  notification.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+  notification.style.color = 'white';
+  notification.style.padding = '10px 20px';
+  notification.style.borderRadius = '5px';
+  notification.style.zIndex = '1000'; // Ensure it's on top
+
+  document.body.appendChild(notification);
+
+  // Remove the notification after a few seconds
+  setTimeout(() => {
+      notification.remove();
+  }, 3000); // Remove after 3 seconds
+}
   
   
   function injectChatGptExtractButton() {
