@@ -193,14 +193,18 @@ async function enhancedInitialize() {
   initialize(); // Your original initialize function
 }
 
+// Declare this at the top of your script (or module)
+const handledInputs = new WeakSet();
+
 function setupAutoSave() {
   console.log("auto save setup");
-
-  // Common handler: on Enter key (without Shift), trigger auto-save
+  
   const handleKeyDown = (e) => {
+    // Optional: Prevent repeated events from holding down the key
+    if (e.repeat) return;
+
     if (e.key === "Enter" && !e.shiftKey) {
       console.log("enter pressed. sending conversation to backend");
-      // Allow a brief delay for the send action to complete
       setTimeout(() => {
         chrome.storage.sync.get(["autoSaveEnabled"], (result) => {
           console.log("Auto-save enabled:", result.autoSaveEnabled);
@@ -212,27 +216,28 @@ function setupAutoSave() {
     }
   };
 
-  // ChatGPT input: contenteditable div with id "prompt-textarea"
+  const addListenerIfExists = (element) => {
+    if (!element || handledInputs.has(element)) return;
+    element.addEventListener("keydown", handleKeyDown);
+    handledInputs.add(element);
+  };
+
+  // Finding and adding listeners to the different chat inputs
   const chatGPTInput = document.getElementById('prompt-textarea');
-  if (chatGPTInput) {
-    chatGPTInput.addEventListener('keydown', handleKeyDown);
-  }
+  addListenerIfExists(chatGPTInput);
 
-  // DeepSeek input: textarea with id "chat-input"
   const deepseekInput = document.getElementById('chat-input');
-  if (deepseekInput) {
-    deepseekInput.addEventListener('keydown', handleKeyDown);
-  }
+  addListenerIfExists(deepseekInput);
 
-  // Claude AI input: contenteditable inside a container with aria-label "Write your prompt to Claude"
-  const claudeInput = document.querySelector('div[aria-label="Write your prompt to Claude"] div[contenteditable="true"]');
-  if (claudeInput) {
-    claudeInput.addEventListener('keydown', handleKeyDown);
-  }
+  const claudeInput = document.querySelector('[aria-label="Write your prompt to Claude"] [contenteditable="true"]');
+  addListenerIfExists(claudeInput);
 
-  // todo: add gemini input handler
-  
+  const geminiInput = document.querySelector('.ql-editor.textarea[contenteditable="true"]');
+  addListenerIfExists(geminiInput);
 }
+
+
+
 
 // Start the enhanced initialization process
 enhancedInitialize();

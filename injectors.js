@@ -446,7 +446,6 @@ function injectClaudeExtractButton() {
   function detectPlatformAndInject() {
     const url = window.location.href;
     
-    console.log("Current URL:", url);
     // Try to inject based on URL patterns
     if (url.includes('chatgpt.com')) {
       return injectChatGptExtractButton();
