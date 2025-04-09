@@ -1,33 +1,43 @@
+
+
 //-------------------------------Dialogues Extraction--------------------------------
 function extractChatGPTDialogue() {
-    const dialogues = [];
-    document.querySelectorAll('article').forEach(article => {
-      // Check for user messages.
-      const userElem = article.querySelector('.whitespace-pre-wrap');
-      if (userElem) {
-        dialogues.push({ role: 'user', text: userElem.innerText });
-        return;
-      }
-      // Check for AI messages.
-      const aiElem = article.querySelector('.markdown.prose.w-full.break-words');
-      if (aiElem) {
-        let messageText = '';
-        aiElem.querySelectorAll('[data-start][data-end]').forEach(part => {
-          messageText += part.innerText;
+  const dialogues = [];
+
+  // Instantiate the Turndown converter.
+  const turndownService = new TurndownService();
+  // Iterate over every article element that represents a message.
+  document.querySelectorAll('article').forEach(article => {
+    // Check for user messages.
+    const userElem = article.querySelector('.whitespace-pre-wrap');
+    if (userElem) {
+      // Convert the HTML to Markdown.
+      const markdown = turndownService.turndown(userElem.innerHTML);
+      dialogues.push({ role: 'user', text: markdown });
+      return;
+    }
+    // Check for AI messages.
+    const aiElem = article.querySelector('.markdown.prose.w-full.break-words');
+    if (aiElem) {
+      // Convert the full HTML of the AI message to Markdown.
+      const markdown = turndownService.turndown(aiElem.innerHTML);
+      
+      // Optionally, extract images separately (if needed),
+      // though Turndown will also convert <img> tags by default.
+      const images = [];
+      aiElem.querySelectorAll('img').forEach(img => {
+        images.push({
+          src: img.src,
+          alt: img.alt || ''
         });
-        // Also capture images if any.
-        const images = [];
-        aiElem.querySelectorAll('img').forEach(img => {
-          images.push({
-            src: img.src,
-            alt: img.alt || ''
-          });
-        });
-        dialogues.push({ role: 'ai', text: messageText, images: images });
-      }
-    });
-    return dialogues;
-  }
+      });
+      
+      dialogues.push({ role: 'ai', text: markdown, images: images });
+    }
+  });
+  return dialogues;
+}
+
   
   function extractClaudeDialogue() {
   // Select the conversation container.
